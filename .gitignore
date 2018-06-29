@@ -1,0 +1,8 @@
+# conf file generated from template, will be different for all users
+k8s-conf.generated.yaml
+
+# text editor stuff
+.idea
+
+# python stuff
+*.pyc
