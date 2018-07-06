@@ -8,7 +8,7 @@ import getpass
 KEY_ENVIRONMENT = 'environment'
 KEY_OWNER = 'owner'
 KEY_IMAGE_NAME = 'imgname'
-KEY_DB_ADDR = 'd_addr'
+KEY_DB_ADDR = 'db_addr'
 
 def parse_args():
     parser = argparse.ArgumentParser(
