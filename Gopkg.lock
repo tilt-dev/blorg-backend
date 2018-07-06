@@ -13,9 +13,30 @@
   revision = "e3702bed27f0d39777b0b37b664b6280e8ef8fbf"
   version = "v1.6.2"
 
+[[projects]]
+  branch = "master"
+  name = "github.com/lib/pq"
+  packages = [
+    ".",
+    "oid"
+  ]
+  revision = "90697d60dd844d5ef6ff15135d0203f65d2f53b8"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/proullon/ramsql"
+  packages = [
+    "driver",
+    "engine",
+    "engine/log",
+    "engine/parser",
+    "engine/protocol"
+  ]
+  revision = "06a3b167c4f00229fdbe2e6d98c4eb1c3f1555fe"
+
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "710acbeff1e035c63e93b534fee8114af6b54616b1b0f926f0da85a0fceea502"
+  inputs-digest = "9677c0b9acbb844fe68a7ecd91810bd8744f0437fd5d49e45eb2dda7a0aa76bc"
   solver-name = "gps-cdcl"
   solver-version = 1
