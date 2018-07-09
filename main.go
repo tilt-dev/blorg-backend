@@ -53,7 +53,7 @@ func Golink(w http.ResponseWriter, req *http.Request) {
 	case "GET":
 		link, err := gl.LinkFromName(name)
 		if err != nil {
-			log.Fatal(err)
+			log.Fatal("error getting link from name: ", err)
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
