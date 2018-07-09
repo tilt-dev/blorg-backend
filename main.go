@@ -49,6 +49,7 @@ func Pong(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(w, "pong")
 }
 
+// TODO(dmiller) make errors JSON
 func Golink(w http.ResponseWriter, req *http.Request) {
 	gl := golink.NewGolink(db)
 	vars := mux.Vars(req)
@@ -64,11 +65,14 @@ func Golink(w http.ResponseWriter, req *http.Request) {
 		}
 		if link == "" {
 			w.WriteHeader(http.StatusNotFound)
-			// TODO(dmiller) make this JSON
 			fmt.Fprint(w, "Link not found")
 			return
 		}
-		j, _ := golink.LinkAsJSON(name, link)
+		j, err := golink.LinkAsJSON(name, link)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Fatal("error getting link as JSON: ", err)
+		}
 		fmt.Fprint(w, j)
 
 	case "PUT":
@@ -86,7 +90,11 @@ func Golink(w http.ResponseWriter, req *http.Request) {
 		}
 
 		w.WriteHeader(http.StatusOK)
-		j, _ := golink.LinkAsJSON(payload.Name, payload.Address)
+		j, err := golink.LinkAsJSON(payload.Name, payload.Address)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			log.Fatal("error getting link as JSON: ", err)
+		}
 		fmt.Fprint(w, j)
 	default:
 		w.WriteHeader(http.StatusBadRequest)
