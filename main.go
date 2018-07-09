@@ -36,7 +36,12 @@ func setupDatabase() {
 	db2, err := sql.Open("postgres", fmt.Sprintf("postgresql://%s@%s/golink?sslmode=disable", USER, *dbAddr))
 	db = db2
 	if err != nil {
-		log.Fatal("error connecting to the database: ", err)
+		log.Fatal("error opening database: ", err)
+	}
+
+	err = db.Ping()
+	if err != nil {
+		log.Fatal("error connecting to database: ", err)
 	}
 }
 
