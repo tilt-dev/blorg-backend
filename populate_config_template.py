@@ -54,7 +54,7 @@ def populate_config_template(infile, env, owner):
         KEY_ENVIRONMENT: env,
         KEY_OWNER: owner,
         KEY_IMAGE_NAME: utils.image_name(env, owner),
-        KEY_DB_ADDR: "hissing-cockroach-cockroachAdb:26257",
+        KEY_DB_ADDR: "hissing-cockroach-cockroachdb:26257",
     }
     template = get_file(infile)
 

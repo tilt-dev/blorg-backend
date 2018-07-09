@@ -32,8 +32,8 @@ func main() {
 }
 
 func setupDatabase() {
-	// Connect to the "bank" database.
-	db2, err := sql.Open("postgres", fmt.Sprintf("postgresql://%s@%s/golink?sslmode=disable", USER, *dbAddr))
+	cs := fmt.Sprintf("postgresql://%s@%s/golink?sslmode=disable", USER, *dbAddr)
+	db2, err := sql.Open("postgres", cs)
 	db = db2
 	if err != nil {
 		log.Fatal("error opening database: ", err)
