@@ -12,17 +12,17 @@ type Link struct {
 	Address string
 }
 
-type golink struct {
+type Golink struct {
 	db *sql.DB
 }
 
-func NewGolink(db *sql.DB) *golink {
-	return &golink{
+func NewGolink(db *sql.DB) *Golink {
+	return &Golink{
 		db: db,
 	}
 }
 
-func (g *golink) LinkFromName(name string) (string, error) {
+func (g *Golink) LinkFromName(name string) (string, error) {
 	query := "SELECT links.url FROM links WHERE links.name = $1;"
 
 	rows, err := g.db.Query(query, name)
@@ -42,7 +42,7 @@ func (g *golink) LinkFromName(name string) (string, error) {
 	return url, nil
 }
 
-func (*golink) WriteLink(payload *Link) error {
+func (*Golink) WriteLink(payload *Link) error {
 	return nil
 }
 
