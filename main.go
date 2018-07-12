@@ -1,16 +1,21 @@
+//go:generate protoc -I ./proto --go_out=plugins=grpc:./proto ./proto/backend.proto
+
 package main
 
 import (
+	"context"
 	"database/sql"
 	"flag"
 	"fmt"
 	"log"
-	"net/http"
-
-	"github.com/gorilla/mux"
-	"github.com/windmilleng/blorg-backend/golink"
+	"net"
 
 	_ "github.com/lib/pq"
+	"github.com/windmilleng/blorg-backend/golink"
+	pb "github.com/windmilleng/blorg-backend/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/reflection"
 )
 
 const USER = "blorger"
@@ -18,17 +23,60 @@ const USER = "blorger"
 var dbAddr = flag.String("dbAddr", "localhost:26257", "address of the blorg database")
 var db *sql.DB
 
+type server struct {
+	gl *golink.Golink
+}
+
+func (s *server) Pong(ctx context.Context, in *pb.PongRequest) (*pb.PongResponse, error) {
+	return &pb.PongResponse{}, nil
+}
+
+func (s *server) GetGolink(ctx context.Context, in *pb.GetGolinkRequest) (*pb.Golink, error) {
+	link, err := s.gl.LinkFromName(in.Name)
+	if err != nil {
+		return nil, grpc.Errorf(codes.InvalidArgument, "error getting link from name: %s", err)
+	}
+
+	if link == "" {
+		return nil, grpc.Errorf(codes.NotFound, "Link not found for %s", in.Name)
+	}
+
+	return &pb.Golink{
+		Name:    in.Name,
+		Address: link,
+	}, nil
+}
+
+func (s *server) CreateGolink(ctx context.Context, in *pb.Golink) (*pb.Golink, error) {
+	l := &golink.Link{
+		Name:    in.Name,
+		Address: in.Address,
+	}
+	err := s.gl.WriteLink(l)
+	if err != nil {
+		return &pb.Golink{}, grpc.Errorf(codes.Internal, "Error writing link: %s", err)
+	}
+	return &pb.Golink{}, nil
+}
+
 func main() {
 	flag.Parse()
 
-	setupDatabase()
+	lis, err := net.Listen("tcp", ":8080")
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
 
-	r := mux.NewRouter()
-	r.HandleFunc("/pong", Pong)
-	r.HandleFunc("/golink/{name}", Golink)
-	http.Handle("/", r)
-	fmt.Println("Starting up on 8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	setupDatabase()
+	gl := golink.NewGolink(db)
+
+	s := grpc.NewServer()
+	pb.RegisterBackendServer(s, &server{gl: gl})
+	// NOTE(dmiller): this allows a dev to interrogate the server at runtime and see what services/RPCs are available
+	reflection.Register(s)
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
 
 func setupDatabase() {
@@ -42,61 +90,5 @@ func setupDatabase() {
 	err = db.Ping()
 	if err != nil {
 		log.Fatal("error connecting to database: ", err)
-	}
-}
-
-func Pong(w http.ResponseWriter, req *http.Request) {
-	fmt.Fprintln(w, "pong")
-}
-
-// TODO(dmiller) make errors JSON
-func Golink(w http.ResponseWriter, req *http.Request) {
-	gl := golink.NewGolink(db)
-	vars := mux.Vars(req)
-	name := vars["name"]
-
-	switch req.Method {
-	case "GET":
-		link, err := gl.LinkFromName(name)
-		if err != nil {
-			log.Fatal("error getting link from name: ", err)
-			w.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-		if link == "" {
-			w.WriteHeader(http.StatusNotFound)
-			fmt.Fprint(w, "Link not found")
-			return
-		}
-		j, err := golink.LinkAsJSON(name, link)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Fatal("error getting link as JSON: ", err)
-		}
-		fmt.Fprint(w, j)
-
-	case "PUT":
-		payload, err := golink.ParseParams(req.Body)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-		err = gl.WriteLink(payload)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			fmt.Fprintf(w, "%s", err)
-			return
-		}
-
-		w.WriteHeader(http.StatusOK)
-		j, err := golink.LinkAsJSON(payload.Name, payload.Address)
-		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-			log.Fatal("error getting link as JSON: ", err)
-		}
-		fmt.Fprint(w, j)
-	default:
-		w.WriteHeader(http.StatusBadRequest)
 	}
 }
