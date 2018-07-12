@@ -72,6 +72,7 @@ func main() {
 
 	s := grpc.NewServer()
 	pb.RegisterBackendServer(s, &server{gl: gl})
+	// NOTE(dmiller): this allows a dev to interrogate the server at runtime and see what services/RPCs are available
 	reflection.Register(s)
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
