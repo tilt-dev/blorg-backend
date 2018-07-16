@@ -42,7 +42,13 @@ func (g *Golink) LinkFromName(name string) (string, error) {
 	return url, nil
 }
 
-func (*Golink) WriteLink(payload *Link) error {
+func (g *Golink) WriteLink(payload *Link) error {
+	stmt := "INSERT INTO links (name, url) VALUES ($1, $2);"
+	_, err := g.db.Exec(stmt, payload.Name, payload.Address)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
