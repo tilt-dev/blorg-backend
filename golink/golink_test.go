@@ -77,3 +77,39 @@ func TestParseParams(t *testing.T) {
 }
 
 // TODO add fail to parse test case
+
+func TestWriteLink(t *testing.T) {
+	batch := []string{
+		`CREATE TABLE links (name TEXT PRIMARY KEY, url TEXT);`,
+	}
+
+	db, err := sql.Open("ramsql", "TestWriteLink")
+	if err != nil {
+		t.Fatalf("sql.Open : Error : %s\n", err)
+	}
+	defer db.Close()
+
+	for _, b := range batch {
+		_, err = db.Exec(b)
+		if err != nil {
+			t.Fatalf("sql.Exec: Error: %s\n", err)
+		}
+	}
+
+	g := golink.NewGolink(db)
+
+	// test case: write valid link
+	p := &golink.Link{
+		Address: "http://meow.com",
+		Name:    "cat",
+	}
+	g.WriteLink(p)
+	l, err := g.LinkFromName("cat")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if l != "http://meow.com" {
+		t.Errorf("Expected meow.com, got %s", l)
+	}
+
+}
