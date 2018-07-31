@@ -6,3 +6,6 @@ k8s-conf.generated.yaml
 
 # python stuff
 *.pyc
+
+# when running cockroach locally
+cockroach-data

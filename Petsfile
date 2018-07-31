@@ -1,0 +1,18 @@
+# -*- mode: Python -*-
+# Petsfile for starting blorg_backend (https://github.com/windmilleng/pets)
+
+def cockroach_local():
+  port = 26257
+  cockroach = start("cockroach start --insecure --port=%d --http-port=26258" % port)
+  return service(cockroach, "localhost", port)
+
+cockroach = "cockroach"
+register(cockroach, "local", cockroach_local)
+
+def local():
+  port = 8080 # hardcoded in main.go
+  backend = start("go run ./main.go")
+  return service(backend, "localhost", port)
+
+blorg_backend = "blorg-backend"
+register(blorg_backend, "local", local, deps=[cockroach])
