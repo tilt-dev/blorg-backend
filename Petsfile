@@ -2,6 +2,9 @@
 # Petsfile for starting blorg_backend (https://github.com/windmilleng/pets)
 
 def cockroach_local():
+  # Start with a clean database
+  run("rm -fR cockroach-data")
+
   port = 26257
   cockroach = start("cockroach start --insecure --port=%d --http-port=26258" % port)
   return service(cockroach, "localhost", port)
