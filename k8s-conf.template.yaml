@@ -45,7 +45,7 @@ spec:
         imagePullPolicy: Always
         image: %(imgname)s
         command: [
-          "./server",
+          "/app/server",
           "--dbAddr", "%(db_addr)s"
         ]
         ports:
