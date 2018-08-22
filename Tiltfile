@@ -8,10 +8,10 @@ def blorg_backend(env):
   entrypoint = '/app/server'
   image = build_docker_image('Dockerfile.base', 'gcr.io/blorg-dev/blorg-backend:' + env + '-' + local('whoami').rstrip('\n'), entrypoint)
   src_dir = '/go/src/github.com/windmilleng/blorg-backend'
-  image.add_mount(src_dir, git_repo('.'))
-  image.add_cmd('cd ' + src_dir + '; go get ./...')
-  image.add_cmd('mkdir -p /app')
-  image.add_cmd('cd ' + src_dir + '; go build -o server; cp server /app/')
+  image.add(src_dir, local_git_repo('.'))
+  image.run('cd ' + src_dir + '; go get ./...')
+  image.run('mkdir -p /app')
+  image.run('cd ' + src_dir + '; go build -o server; cp server /app/')
   # print(image)
   yaml = local('python populate_config_template.py ' + env + ' 1>&2 && cat k8s-conf.generated.yaml')
 
