@@ -1,0 +1,44 @@
+# Template should be populated using populate_config_template.py
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: lb-blorg-be
+  labels:
+    app: blorg
+    tier: backend
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: blorg
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: blorg-be
+spec:
+  selector:
+    matchLabels:
+      app: blorg
+      tier: backend
+  template:
+    metadata:
+      name: blorg-be
+      labels:
+        app: blorg
+        tier: backend
+    spec:
+      containers:
+      - name: backend
+        imagePullPolicy: Always
+        image: blorg-dev/blorg-backend
+        command: [
+          "/app/server",
+          "--dbAddr", "hissing-cockroach-cockroachdb:26257"
+        ]
+        ports:
+        - containerPort: 8080
