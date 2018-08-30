@@ -28,6 +28,7 @@ type server struct {
 }
 
 func (s *server) Pong(ctx context.Context, in *pb.PongRequest) (*pb.PongResponse, error) {
+	asdfj
 	return &pb.PongResponse{}, nil
 }
 
