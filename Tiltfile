@@ -8,7 +8,7 @@ def blorg_backend(env):
   entrypoint = '/app/server'
   image = build_docker_image('Dockerfile.base', 'gcr.io/blorg-dev/blorg-backend:' + env + '-' + local('whoami').rstrip('\n'), entrypoint)
   src_dir = '/go/src/github.com/windmilleng/blorg-backend'
-  image.add(src_dir, local_git_repo('.'))
+  image.add(local_git_repo('.'), src_dir)
   image.run('cd ' + src_dir + '; go get ./...')
   image.run('mkdir -p /app')
   image.run('cd ' + src_dir + '; go build -o server; cp server /app/')
